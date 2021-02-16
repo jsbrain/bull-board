@@ -7,6 +7,7 @@ import {
   QueueAdapterOptions,
 } from '../@types/app'
 
+// TODO: This should be injected into the AppJob type so those props will only be present for bullmq lib
 // * To use with AppJob type
 type AdditionalBullProps = {
   progress: Job['progress']

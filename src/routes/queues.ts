@@ -39,10 +39,13 @@ const getStats = async <Job>({
   return validMetrics
 }
 
-const formatJob = (job: Job | JobMq): app.AppJob => {
-  const jobProps = job.toJSON()
+const formatJob = <Job extends JobMock, AddProps>(
+  job: Job,
+): app.AppJob<Job['opts'], AddProps> => {
+  const jobProps: ReturnType<Job['toJSON']> = job.toJSON()
 
-  return {
+  // TODO: Should be improved to return actual present values only ...
+  return ({
     id: jobProps.id,
     timestamp: jobProps.timestamp,
     processedOn: jobProps.processedOn,
@@ -56,7 +59,7 @@ const formatJob = (job: Job | JobMq): app.AppJob => {
     data: jobProps.data,
     name: jobProps.name,
     returnValue: jobProps.returnvalue,
-  }
+  } as unknown) as app.AppJob<Job['opts'], AddProps>
 }
 
 const statuses: JobStatus[] = [
@@ -68,7 +71,7 @@ const statuses: JobStatus[] = [
   'waiting',
 ]
 
-const getDataForQueues = async <Job extends JobOptionsObj, AddProps>(
+const getDataForQueues = async <Job extends JobMock, AddProps>(
   bullBoardQueues: app.BullBoardQueues<Job>,
   req: Request,
 ): Promise<api.GetQueues<Job['opts'], AddProps>> => {
@@ -82,7 +85,7 @@ const getDataForQueues = async <Job extends JobOptionsObj, AddProps>(
     }
   }
 
-  const queues: app.AppQueue<Job['opts'], AddProps>[] = await Promise.all(
+  const queues: app.AppQueue<Job['opts'], AddProps>[] = (await Promise.all(
     pairs.map(async ([name, { queue }]) => {
       const counts = await queue.getJobCounts(...statuses)
       const status =
@@ -96,7 +99,7 @@ const getDataForQueues = async <Job extends JobOptionsObj, AddProps>(
         readOnlyMode: queue.readOnlyMode,
       }
     }),
-  )
+  )) as app.AppQueue<Job['opts'], AddProps>[]
 
   const stats = await getStats(pairs[0][1])
 

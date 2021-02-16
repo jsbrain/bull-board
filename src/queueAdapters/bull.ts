@@ -45,6 +45,7 @@ export class BullAdapter implements QueueAdapter<Job> {
   }
 }
 
+// TODO: Make this better ...
 const bullRouter = routerFactory()
 
 export const replaceQueues = bullRouter.replaceQueues

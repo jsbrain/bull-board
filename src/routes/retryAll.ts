@@ -2,10 +2,13 @@ import { Request, RequestHandler, Response } from 'express-serve-static-core'
 
 import { BullBoardQueues } from '../@types/app'
 
-export const retryAll: RequestHandler = async (req: Request, res: Response) => {
+export const retryAll: RequestHandler = async <Job extends JobMock>(
+  req: Request,
+  res: Response,
+) => {
   const { queueName } = req.params
   const { bullBoardQueues } = req.app.locals as {
-    bullBoardQueues: BullBoardQueues
+    bullBoardQueues: BullBoardQueues<Job>
   }
 
   const { queue } = bullBoardQueues[queueName]

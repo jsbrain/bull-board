@@ -11,6 +11,7 @@ import { queuesHandler } from '../routes/queues'
 import { retryAll } from '../routes/retryAll'
 import { retryJob } from '../routes/retryJob'
 
+// TODO: Something like that ...
 export const routerFactory = <Job>() => {
   const bullBoardQueues: BullBoardQueues<Job> = {}
 
@@ -57,8 +58,6 @@ export const routerFactory = <Job>() => {
 
     return setQueues(bullQueues)
   }
-
-  // export { router }
 
   return {
     setQueues,

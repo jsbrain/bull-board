@@ -55,25 +55,6 @@ export interface ValidMetrics {
   blocked_clients: string
 }
 
-// export interface AppJob {
-//   id: string | number | undefined
-//   timestamp: number | null
-//   processedOn?: number | null
-//   finishedOn?: number | null
-//   progress: JobMq['progress']
-//   attempts: JobMq['attemptsMade']
-//   failedReason: JobMq['failedReason']
-//   stacktrace: string[] | null
-//   opts: JobsOptions | JobOptions
-//   data: JobMq['data']
-//   name: JobMq['name']
-//   delay: number | undefined
-//   returnValue: string | Record<string | number, any> | null
-// }
-
-// type Test = JobOptions['timestamp']
-// type Test = JobsOptions['timestamp']
-
 export type GenAppJob<JobOpts> = {
   id: string | number | undefined
   timestamp: number | null
@@ -85,19 +66,10 @@ export type GenAppJob<JobOpts> = {
   returnValue: string | Record<string | number, any> | null
 }
 
+// NOTE: The additional props type probably could be omitted, depending on the actual usage of the props
 export type AppJob<JobOpts, AddProps> = AddProps extends Record<string, never>
   ? GenAppJob<JobOpts>
   : GenAppJob<JobOpts> & AddProps
-
-// ! vvv use default value after finalization
-// export type AppJob<
-//   JobOpts,
-//   AddProps = Record<string, never>
-// > = AddProps extends Record<string, never>
-//   ? GenAppJob<JobOpts>
-//   : GenAppJob<JobOpts> & AddProps
-
-// * use as: AppJob<JobsOptions, Record<string, never>>
 
 export interface AppQueue<JobOpts, AddProps> {
   name: string
