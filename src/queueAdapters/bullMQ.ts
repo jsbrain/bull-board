@@ -7,7 +7,16 @@ import {
   QueueAdapterOptions,
 } from '../@types/app'
 
-export class BullMQAdapter implements QueueAdapter {
+// * To use with AppJob type
+type AdditionalBullProps = {
+  progress: Job['progress']
+  attempts: Job['attemptsMade']
+  failedReason: Job['failedReason']
+  data: Job['data']
+  name: Job['name']
+}
+
+export class BullMQAdapter implements QueueAdapter<Job> {
   public readonly readOnlyMode: boolean
   private readonly LIMIT = 1000
 

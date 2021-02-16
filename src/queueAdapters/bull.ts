@@ -6,8 +6,9 @@ import {
   QueueAdapter,
   QueueAdapterOptions,
 } from '../@types/app'
+import { routerFactory } from './routerFactory'
 
-export class BullAdapter implements QueueAdapter {
+export class BullAdapter implements QueueAdapter<Job> {
   public readonly readOnlyMode: boolean
 
   public get client(): Promise<Queue['client']> {
@@ -43,3 +44,11 @@ export class BullAdapter implements QueueAdapter {
     return (this.queue.getJobCounts() as unknown) as Promise<JobCounts>
   }
 }
+
+const bullRouter = routerFactory()
+
+export const replaceQueues = bullRouter.replaceQueues
+export const setQueues = bullRouter.setQueues
+const router = bullRouter.router
+
+export { router }

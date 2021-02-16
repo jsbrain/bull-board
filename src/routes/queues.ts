@@ -1,5 +1,5 @@
-import { Job } from 'bull'
-import { Job as JobMq } from 'bullmq'
+// import { Job } from 'bull'
+// import { Job as JobMq } from 'bullmq'
 import { Request, RequestHandler, Response } from 'express-serve-static-core'
 import { parse as parseRedisInfo } from 'redis-info'
 
@@ -18,9 +18,9 @@ const metrics: MetricName[] = [
   'blocked_clients',
 ]
 
-const getStats = async ({
+const getStats = async <Job>({
   queue,
-}: app.BullBoardQueue): Promise<app.ValidMetrics> => {
+}: app.BullBoardQueue<Job>): Promise<app.ValidMetrics> => {
   const redisClient = await queue.client
   const redisInfoRaw = await redisClient.info()
   const redisInfo = parseRedisInfo(redisInfoRaw)
@@ -68,10 +68,12 @@ const statuses: JobStatus[] = [
   'waiting',
 ]
 
-const getDataForQueues = async (
-  bullBoardQueues: app.BullBoardQueues,
+type JobOptionsObj = { opts: Record<string, any> }
+
+const getDataForQueues = async <Job extends JobOptionsObj, AddProps>(
+  bullBoardQueues: app.BullBoardQueues<Job>,
   req: Request,
-): Promise<api.GetQueues> => {
+): Promise<api.GetQueues<Job['opts'], AddProps>> => {
   const query = req.query || {}
   const pairs = Object.entries(bullBoardQueues)
 
@@ -82,7 +84,7 @@ const getDataForQueues = async (
     }
   }
 
-  const queues: app.AppQueue[] = await Promise.all(
+  const queues: app.AppQueue<Job['opts'], AddProps>[] = await Promise.all(
     pairs.map(async ([name, { queue }]) => {
       const counts = await queue.getJobCounts(...statuses)
       const status =

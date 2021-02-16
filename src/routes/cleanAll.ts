@@ -6,13 +6,13 @@ type RequestParams = {
   queueStatus: JobCleanStatus
 }
 
-export const cleanAll: RequestHandler<RequestParams> = async (
+export const cleanAll: RequestHandler<RequestParams> = async <Job>(
   req: Request,
   res: Response,
 ) => {
   const { queueName, queueStatus } = req.params
   const { bullBoardQueues } = req.app.locals as {
-    bullBoardQueues: BullBoardQueues
+    bullBoardQueues: BullBoardQueues<Job>
   }
 
   const GRACE_TIME_MS = 5000

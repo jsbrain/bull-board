@@ -1,5 +1,5 @@
-import { Job, JobOptions } from 'bull'
-import { Job as JobMq, JobsOptions } from 'bullmq'
+// import { Job, JobOptions } from 'bull'
+// import { Job as JobMq, JobsOptions } from 'bullmq'
 import React from 'react'
 import * as Redis from 'ioredis'
 import { Status } from '../ui/components/constants'
@@ -15,19 +15,19 @@ export type JobStatus = Status
 
 export type JobCounts = Record<JobStatus, number>
 
-export interface QueueAdapter {
+export interface QueueAdapter<BullJob> {
   readonly client: Promise<Redis.Redis>
   readonly readOnlyMode: boolean
 
   getName(): string
 
-  getJob(id: string): Promise<Job | JobMq | undefined | null>
+  getJob(id: string): Promise<BullJob | undefined | null>
 
   getJobs(
     jobStatuses: JobStatus[],
     start?: number,
     end?: number,
-  ): Promise<(Job | JobMq)[]>
+  ): Promise<BullJob[]>
 
   getJobCounts(...jobStatuses: JobStatus[]): Promise<JobCounts>
 
@@ -38,12 +38,12 @@ export interface QueueAdapterOptions {
   readOnlyMode: boolean
 }
 
-export interface BullBoardQueue {
-  queue: QueueAdapter
+export interface BullBoardQueue<BullJob> {
+  queue: QueueAdapter<BullJob>
 }
 
-export interface BullBoardQueues {
-  [key: string]: BullBoardQueue
+export interface BullBoardQueues<BullJob> {
+  [key: string]: BullBoardQueue<BullJob>
 }
 
 export interface ValidMetrics {
@@ -55,38 +55,77 @@ export interface ValidMetrics {
   blocked_clients: string
 }
 
-export interface AppJob {
+// export interface AppJob {
+//   id: string | number | undefined
+//   timestamp: number | null
+//   processedOn?: number | null
+//   finishedOn?: number | null
+//   progress: JobMq['progress']
+//   attempts: JobMq['attemptsMade']
+//   failedReason: JobMq['failedReason']
+//   stacktrace: string[] | null
+//   opts: JobsOptions | JobOptions
+//   data: JobMq['data']
+//   name: JobMq['name']
+//   delay: number | undefined
+//   returnValue: string | Record<string | number, any> | null
+// }
+
+// type Test = JobOptions['timestamp']
+// type Test = JobsOptions['timestamp']
+
+export type GenAppJob<JobOpts> = {
   id: string | number | undefined
   timestamp: number | null
   processedOn?: number | null
   finishedOn?: number | null
-  progress: JobMq['progress']
-  attempts: JobMq['attemptsMade']
-  failedReason: JobMq['failedReason']
   stacktrace: string[] | null
-  opts: JobsOptions | JobOptions
-  data: JobMq['data']
-  name: JobMq['name']
+  opts: JobOpts
   delay: number | undefined
   returnValue: string | Record<string | number, any> | null
 }
 
-export interface AppQueue {
+export type AppJob<JobOpts, AddProps> = AddProps extends Record<string, never>
+  ? GenAppJob<JobOpts>
+  : GenAppJob<JobOpts> & AddProps
+
+// ! vvv use default value after finalization
+// export type AppJob<
+//   JobOpts,
+//   AddProps = Record<string, never>
+// > = AddProps extends Record<string, never>
+//   ? GenAppJob<JobOpts>
+//   : GenAppJob<JobOpts> & AddProps
+
+// * use as: AppJob<JobsOptions, Record<string, never>>
+
+export interface AppQueue<JobOpts, AddProps> {
   name: string
   counts: Record<Status, number>
-  jobs: AppJob[]
+  jobs: AppJob<JobOpts, AddProps>[]
   readOnlyMode: boolean
 }
 
-export type SelectedStatuses = Record<AppQueue['name'], Status>
+export type SelectedStatuses<JobOpts, AddProps> = Record<
+  AppQueue<JobOpts, AddProps>['name'],
+  Status
+>
 
-export interface QueueActions {
-  promoteJob: (queueName: string) => (job: AppJob) => () => Promise<void>
-  retryJob: (queueName: string) => (job: AppJob) => () => Promise<void>
-  cleanJob: (queueName: string) => (job: AppJob) => () => Promise<void>
+export interface QueueActions<JobOpts, AddProps> {
+  promoteJob: (
+    queueName: string,
+  ) => (job: AppJob<JobOpts, AddProps>) => () => Promise<void>
+  retryJob: (
+    queueName: string,
+  ) => (job: AppJob<JobOpts, AddProps>) => () => Promise<void>
+  cleanJob: (
+    queueName: string,
+  ) => (job: AppJob<JobOpts, AddProps>) => () => Promise<void>
   retryAll: (queueName: string) => () => Promise<void>
   cleanAllDelayed: (queueName: string) => () => Promise<void>
   cleanAllFailed: (queueName: string) => () => Promise<void>
   cleanAllCompleted: (queueName: string) => () => Promise<void>
-  setSelectedStatuses: React.Dispatch<React.SetStateAction<SelectedStatuses>>
+  setSelectedStatuses: React.Dispatch<
+    React.SetStateAction<SelectedStatuses<JobOpts, AddProps>>
+  >
 }
