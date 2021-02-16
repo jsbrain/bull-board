@@ -68,8 +68,6 @@ const statuses: JobStatus[] = [
   'waiting',
 ]
 
-type JobOptionsObj = { opts: Record<string, any> }
-
 const getDataForQueues = async <Job extends JobOptionsObj, AddProps>(
   bullBoardQueues: app.BullBoardQueues<Job>,
   req: Request,
